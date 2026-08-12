@@ -6,10 +6,13 @@ __pycache__/
 node_modules/
 webapp/node_modules/
 webapp/dist/
+webapp/
 data/
 CookiesDir/
 VideosDirPath/
+output/
 *.cookie
+.env
 .pytest_cache/
 .coverage
 tests/

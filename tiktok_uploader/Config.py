@@ -1,7 +1,17 @@
+import os
+
 from .basics import eprint
 
 
 class Config:
+    # Optional runtime overrides for Northflank / Docker volumes.
+    # Unset variables keep the config.txt (or built-in) defaults.
+    _ENV_OVERRIDES = {
+        "COOKIES_DIR": "TIKTOK_COOKIES_DIR",
+        "VIDEOS_DIR": "TIKTOK_VIDEOS_DIR",
+        "POST_PROCESSING_VIDEO_PATH": "TIKTOK_OUTPUT_DIR",
+    }
+
     _DEFAULT_OPTIONS = {
         "COOKIES_DIR": "./CookiesDir",
         "VIDEOS_DIR": "./VideosDirPath",
@@ -25,8 +35,9 @@ class Config:
         if not Config._instance:
             Config._instance = self
             if not path:
-                self._options = Config._DEFAULT_OPTIONS
+                self._options = dict(Config._DEFAULT_OPTIONS)
                 self.path = None
+                self._apply_env_overrides()
             else:
                 self.path = path
                 self._options = {}
@@ -57,6 +68,7 @@ class Config:
                 if not valid:
                     eprint("Error reading config file, Please check your config file!")
 
+        config._apply_env_overrides()
         Config._instance = config
         return config
 
@@ -69,6 +81,13 @@ class Config:
     
     def _insert_option(self, opt_name: str, value):
         self._options[opt_name] = value
+
+    def _apply_env_overrides(self):
+        """Replace directory options when the matching env var is set."""
+        for opt_name, env_name in Config._ENV_OVERRIDES.items():
+            value = os.environ.get(env_name)
+            if value:
+                self._options[opt_name] = value
 
     @property
     def cookies_dir(self):
